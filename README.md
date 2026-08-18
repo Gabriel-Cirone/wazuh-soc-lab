@@ -26,7 +26,7 @@ workflow:
 
 **Event Generation → Collection → Detection → Analysis → Investigation**
 
-See the Technical Documentation for more information.
+See the Technical Documentation for more information. - documentation/technical-documentation.md
 
 ---
 
