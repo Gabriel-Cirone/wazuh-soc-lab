@@ -1,0 +1,763 @@
+Wazuh SOC/SIEM Laboratory — Technical Documentation
+1. Introduction
+
+This project consists of implementing a Security Information and Event Management (SIEM) laboratory using Wazuh, an open-source security platform designed for endpoint monitoring, security event analysis, threat detection, File Integrity Monitoring (FIM), vulnerability detection, Security Configuration Assessment (SCA), and security event investigation.
+
+The main objective of the laboratory was to reproduce, in a virtualized environment, part of the operation of a Security Operations Center (SOC).
+
+The laboratory consisted of three main virtual machines:
+
+Ubuntu Server 24.04 — Wazuh central server;
+Windows 10 — monitored Windows endpoint;
+Kali Linux — monitored Linux endpoint and controlled security-testing machine.
+
+The Wazuh architecture is composed primarily of the Wazuh Server, Wazuh Indexer, and Wazuh Dashboard, while the monitored endpoints use the Wazuh Agent. The agents collect security-related information and forward it to the Wazuh Server for analysis and processing. The resulting data is stored in the Indexer and presented through the Dashboard.
+
+2. Project Objectives
+
+The main objectives of the laboratory were:
+
+Deploy a functional Wazuh SIEM environment;
+Configure a centralized Wazuh server;
+Connect Windows and Linux endpoints;
+Collect security events and logs;
+Monitor endpoint activity;
+Configure Sysmon on Windows;
+Configure Auditd on Linux;
+Implement File Integrity Monitoring;
+Monitor endpoint vulnerabilities;
+Investigate security events;
+Associate events with MITRE ATT&CK techniques;
+Generate controlled security events;
+Analyze alerts through the Wazuh Dashboard;
+Practice SOC investigation and troubleshooting procedures.
+
+The project was also designed as a practical cybersecurity portfolio project that could later be documented and published on GitHub.
+
+3. Laboratory Architecture
+
+The laboratory was built using virtual machines.
+
+The architecture followed an all-in-one Wazuh deployment, which is appropriate for laboratory environments and small deployments.
+
+The central Wazuh components were installed on the Ubuntu Server:
+
+Wazuh Server;
+Wazuh Indexer;
+Wazuh Dashboard.
+
+The endpoints had the Wazuh Agent installed.
+
+The resulting architecture was:
+
+                    ┌─────────────────────────┐
+                    │     Wazuh Dashboard     │
+                    │      Web Interface      │
+                    └────────────┬────────────┘
+                                 │
+                                 ▼
+                    ┌─────────────────────────┐
+                    │      Wazuh Indexer      │
+                    │   Storage and Search    │
+                    └────────────┬────────────┘
+                                 │
+                                 ▼
+                    ┌─────────────────────────┐
+                    │      Wazuh Server       │
+                    │    Analysis / Manager   │
+                    └────────────┬────────────┘
+                                 │
+                   ┌─────────────┴─────────────┐
+                   │                           │
+                   ▼                           ▼
+          ┌─────────────────┐         ┌─────────────────┐
+          │    Windows 10   │         │    Kali Linux   │
+          │  Wazuh Agent    │         │  Wazuh Agent    │
+          │     + Sysmon    │         │     + Auditd    │
+          └─────────────────┘         └─────────────────┘
+
+The overall data flow was:
+
+Endpoint → Wazuh Agent → Wazuh Server → Wazuh Indexer → Wazuh Dashboard
+
+4. Virtualization Environment
+
+The entire laboratory was deployed using virtual machines.
+
+The host system provided approximately:
+
+16 CPUs
+24 GB of RAM
+
+Resources were distributed between the Wazuh Server, Windows 10, and Kali Linux virtual machines.
+
+This allowed the project to simulate a small enterprise security environment in which a centralized security platform monitors multiple endpoints.
+
+5. Ubuntu Server Installation
+
+The first system configured was Ubuntu Server 24.04.
+
+Ubuntu Server was selected as the central Wazuh server because it is supported by Wazuh and is widely used for server and infrastructure environments.
+
+After installing the operating system, the initial configuration included:
+
+Updating system packages;
+Configuring the network;
+Checking network connectivity;
+Configuring the hostname;
+Installing required utilities;
+Verifying the server IP address.
+
+Network connectivity between the Ubuntu Server and the other virtual machines was also verified.
+
+The VirtualBox network configuration was particularly important because the endpoints needed to communicate with the Wazuh Server.
+
+6. Wazuh Installation
+
+Once Ubuntu Server was prepared, Wazuh was installed using the official deployment method.
+
+The main components installed were:
+
+Wazuh Server
+
+The Wazuh Server is responsible for receiving and analyzing data from the agents.
+
+It performs tasks such as:
+
+Receiving events;
+Decoding logs;
+Applying detection rules;
+Generating alerts;
+Processing security data;
+Managing agents.
+Wazuh Indexer
+
+The Wazuh Indexer is responsible for storing and indexing the data processed by the Wazuh Server.
+
+This allows security events and alerts to be searched and analyzed later.
+
+Wazuh Dashboard
+
+The Dashboard provides the graphical interface used to interact with the platform.
+
+It allows analysts to:
+
+Monitor agents;
+View alerts;
+Search events;
+Investigate incidents;
+Review vulnerabilities;
+Analyze FIM events;
+Review MITRE ATT&CK information;
+Monitor endpoint information.
+7. Network Communication
+
+Understanding network communication was an important part of the implementation.
+
+Some of the main Wazuh services use the following ports:
+
+Port	Purpose
+1514/TCP	Agent communication
+1515/TCP	Agent enrollment
+55000/TCP	Wazuh API
+9200/TCP	Wazuh Indexer API
+443/TCP	Wazuh Dashboard
+
+The Wazuh Agent uses the Wazuh Server to establish communication and forward security information.
+
+Therefore, network connectivity had to be verified before troubleshooting the agents themselves.
+
+8. Wazuh Dashboard
+
+After installing the Wazuh components, the Dashboard was accessed through a web browser.
+
+The Dashboard became the main interface for interacting with the laboratory.
+
+From the Dashboard, it was possible to access:
+
+Agent information;
+Security alerts;
+Events;
+Severity levels;
+Vulnerabilities;
+File Integrity Monitoring;
+MITRE ATT&CK information;
+Endpoint information;
+Inventory data.
+
+This provided a centralized view of the security state of the laboratory.
+
+9. Windows 10 Endpoint Configuration
+
+The next step was configuring Windows 10 as a monitored endpoint.
+
+The Wazuh Agent was installed on Windows 10 and configured to communicate with the Wazuh Server.
+
+The basic communication flow became:
+
+Windows 10
+     │
+     ▼
+Wazuh Agent
+     │
+     ▼
+Wazuh Server
+
+After installation, the agent was registered with the Wazuh Server.
+
+The Dashboard was then used to verify whether the Windows endpoint appeared and whether its connection status was active.
+
+10. Windows Agent Troubleshooting
+
+During the Windows configuration, we encountered problems with the agent not appearing correctly in the Wazuh Dashboard.
+
+We investigated several possible causes, including:
+
+Whether the Wazuh Agent service was running;
+Whether the agent configuration was correct;
+Whether the Wazuh Server IP address was correct;
+Whether the Windows machine could reach the server;
+Whether the agent enrollment process had been completed;
+Whether administrative permissions were available.
+
+This troubleshooting process was important because it demonstrated a real-world infrastructure security scenario.
+
+After correcting the configuration, communication between Windows and the Wazuh Server was successfully established.
+
+11. Sysmon Installation
+
+After successfully configuring the Windows agent, Microsoft Sysmon (System Monitor) was introduced.
+
+Sysmon is part of the Microsoft Sysinternals suite and provides detailed telemetry about system activity.
+
+It can provide information related to activities such as:
+
+Process creation;
+Network connections;
+File-related activity;
+Process-related events;
+Other system activities relevant to security investigations.
+
+The purpose of using Sysmon was to provide richer telemetry to the Wazuh platform.
+
+The resulting flow was:
+
+Windows Activity
+       ↓
+     Sysmon
+       ↓
+Windows Event Log
+       ↓
+Wazuh Agent
+       ↓
+Wazuh Server
+       ↓
+Wazuh Indexer
+       ↓
+Wazuh Dashboard
+
+This significantly increased the amount of useful security telemetry available from the Windows endpoint.
+
+12. Wazuh and Sysmon Integration
+
+After installing Sysmon, the Wazuh Agent was configured to collect the events generated by Sysmon through the Windows Event Log.
+
+This allowed Sysmon telemetry to be forwarded to the Wazuh Server.
+
+The purpose was not simply to collect raw logs, but to allow the Wazuh detection engine to process those events and generate useful security information.
+
+This created a more realistic endpoint-monitoring environment.
+
+13. Kali Linux Configuration
+
+The second monitored endpoint was Kali Linux.
+
+Kali Linux served two purposes:
+
+It was a monitored Linux endpoint.
+It was used to perform controlled security tests against the laboratory.
+
+The Wazuh Agent was installed and configured on Kali Linux.
+
+The resulting configuration was:
+
+Kali Linux
+   │
+   ├── Wazuh Agent
+   │
+   ├── Auditd
+   │
+   └── Security Testing Tools
+            │
+            ▼
+       Wazuh Server
+
+This allowed the Wazuh Server to receive telemetry from both Windows and Linux systems.
+
+14. Auditd Configuration
+
+Auditd, part of the Linux Audit Framework, was configured on Kali Linux.
+
+Auditd provides detailed auditing information about activities occurring within the Linux operating system.
+
+The objective was to collect these audit events through the Wazuh Agent.
+
+The resulting flow was:
+
+Activity on Kali Linux
+        ↓
+      Auditd
+        ↓
+ Audit Log Events
+        ↓
+   Wazuh Agent
+        ↓
+   Wazuh Server
+        ↓
+ Wazuh Dashboard
+
+One of the validation steps performed during the project was confirming that Auditd events were successfully reaching the Wazuh Dashboard.
+
+15. Auditd Troubleshooting
+
+During the Linux configuration, we specifically verified whether Auditd events were being correctly collected.
+
+Installing Auditd alone was not sufficient.
+
+The entire data path had to be verified:
+
+Auditd
+   ↓
+Audit Logs
+   ↓
+Wazuh Agent
+   ↓
+Wazuh Server
+   ↓
+Wazuh Indexer
+   ↓
+Wazuh Dashboard
+
+This helped demonstrate an important SIEM troubleshooting principle:
+
+If an event does not appear in the SIEM, the problem may exist at the data source, collection, transport, processing, storage, or visualization layer.
+
+16. File Integrity Monitoring
+
+Another important Wazuh feature explored in the project was File Integrity Monitoring (FIM).
+
+FIM is used to monitor selected files and detect unauthorized or unexpected modifications.
+
+The general process is:
+
+Original File
+     ↓
+Baseline / Hash
+     ↓
+File Modification
+     ↓
+Wazuh Detection
+     ↓
+Alert
+
+This functionality can help identify:
+
+Unauthorized file modifications;
+Configuration changes;
+Changes to critical files;
+Potential indicators of compromise.
+
+FIM is particularly relevant in defensive security because attackers may modify system files, configuration files, scripts, or other resources after gaining access to an endpoint.
+
+17. Endpoint Inventory
+
+The Wazuh inventory capabilities were also explored.
+
+Inventory information provides visibility into the monitored endpoints, including information such as:
+
+Operating system;
+Hardware;
+Installed software;
+Packages;
+System information.
+
+This is important from a SOC perspective because an analyst needs to understand the asset involved in an event.
+
+A security alert is much more useful when the analyst can determine:
+
+What happened? Where did it happen? Which system was affected? What software is installed on that system?
+
+18. Vulnerability Detection
+
+The laboratory also explored Wazuh's Vulnerability Detection capabilities.
+
+The feature provides information about vulnerabilities associated with software installed on monitored endpoints.
+
+The general process can be represented as:
+
+Endpoint
+   ↓
+Installed Software
+   ↓
+Software Version
+   ↓
+Known Vulnerability
+   ↓
+CVE
+   ↓
+Severity / Risk
+
+This adds a vulnerability-management perspective to the SIEM environment.
+
+Instead of only detecting security events, the platform can also provide information about weaknesses present in the monitored infrastructure.
+
+19. MITRE ATT&CK Integration
+
+The project also explored the relationship between Wazuh alerts and the MITRE ATT&CK framework.
+
+MITRE ATT&CK provides a structured knowledge base of adversary tactics and techniques.
+
+The general relationship can be represented as:
+
+Security Event
+      ↓
+Wazuh Rule
+      ↓
+Detection
+      ↓
+MITRE ATT&CK
+      ↓
+Tactic / Technique
+
+This is important because a SOC analyst should not analyze events only in isolation.
+
+Understanding the behavior represented by an event helps determine whether it may correspond to a known adversarial technique.
+
+20. Generating Security Events
+
+Once the environment was operational, controlled activities were performed to generate events.
+
+One of the main tools used was Nmap.
+
+Nmap was executed from Kali Linux to perform controlled network reconnaissance against the laboratory environment.
+
+The purpose was not to compromise the systems, but to generate observable network activity and evaluate the monitoring capabilities of the environment.
+
+The process was:
+
+Kali Linux
+     │
+     │ Nmap
+     ▼
+Laboratory Target
+     │
+     ▼
+Network Activity
+     │
+     ▼
+Wazuh
+     │
+     ▼
+Events / Alerts
+     │
+     ▼
+Dashboard
+
+This provided a practical way to validate whether the monitoring environment could observe security-related activity.
+
+21. Investigating Events in the Dashboard
+
+After generating the test activity, the Wazuh Dashboard was used to locate the corresponding events.
+
+The investigation focused on information such as:
+
+Timestamp;
+Source endpoint;
+Source IP address;
+Event type;
+Alert severity;
+Rule ID;
+Event description;
+MITRE ATT&CK information when available.
+
+This represents a simplified version of a typical SOC workflow:
+
+Detect → Contextualize → Investigate → Classify
+
+22. Event Filtering
+
+Filtering events was another important part of the project.
+
+A SIEM environment can receive a large volume of data.
+
+Therefore, displaying every event simultaneously is not practical for an analyst.
+
+The Wazuh Dashboard allows analysts to narrow their investigation using fields such as:
+
+Agent;
+IP address;
+Rule;
+Alert level;
+Timestamp;
+Event type;
+Specific event fields.
+
+This allowed us to isolate the events generated during our controlled tests.
+
+23. Sysmon Troubleshooting
+
+During the Windows configuration, we also encountered an issue where the Sysmon executable was not being recognized correctly.
+
+The installation and execution path were verified, and the configuration was corrected.
+
+After the necessary adjustments, Sysmon was functioning correctly and its events could be used as telemetry for the Wazuh environment.
+
+This demonstrated another important troubleshooting principle:
+
+Each component of a security monitoring pipeline should be tested independently before troubleshooting the SIEM itself.
+
+24. Agent Validation
+
+After configuring both endpoints, the Wazuh Dashboard was used to verify their status.
+
+The final environment contained:
+
+Windows 10
+Wazuh Agent
+Status: Active
+
+
+Kali Linux
+Wazuh Agent
+Status: Active
+
+This confirmed that both endpoints were successfully communicating with the Wazuh Server.
+
+Agent status verification was important before performing further security tests because there is no value in generating events if the telemetry is not reaching the SIEM.
+
+25. Complete Data Flow
+
+The final laboratory data flow can be represented as follows:
+
+                     WINDOWS 10
+                  ┌──────────────┐
+                  │    Sysmon    │
+                  └──────┬───────┘
+                         │
+                         ▼
+                  Windows Events
+                         │
+                         ▼
+                   Wazuh Agent
+                         │
+                         │
+                         ▼
+                ┌─────────────────┐
+                │  Wazuh Server   │
+                │                 │
+                │ Decoders        │
+                │ Rules           │
+                │ Analysis        │
+                └────────┬────────┘
+                         │
+                         ▼
+                ┌─────────────────┐
+                │ Wazuh Indexer   │
+                │                 │
+                │ Storage         │
+                │ Search          │
+                └────────┬────────┘
+                         │
+                         ▼
+                ┌─────────────────┐
+                │ Wazuh Dashboard │
+                │                 │
+                │ Alerts          │
+                │ Events          │
+                │ FIM             │
+                │ Vulnerabilities │
+                │ MITRE ATT&CK    │
+                └─────────────────┘
+                         ▲
+                         │
+                    Wazuh Server
+                         ▲
+                         │
+                   Wazuh Agent
+                         ▲
+                         │
+                ┌────────┴────────┐
+                │   Kali Linux   │
+                │                │
+                │    Auditd      │
+                │    Nmap        │
+                └────────────────┘
+26. SOC Perspective
+
+One of the main goals of the project was to simulate a simplified Security Operations Center.
+
+A typical security monitoring workflow can be represented as:
+
+          EVENT
+            ↓
+         COLLECTION
+            ↓
+        SIEM / SOC
+            ↓
+        DETECTION
+            ↓
+      INITIAL TRIAGE
+            ↓
+       INVESTIGATION
+            ↓
+      RISK CLASSIFICATION
+            ↓
+         RESPONSE
+            ↓
+        DOCUMENTATION
+
+In our laboratory, Wazuh performed the main functions related to:
+
+Telemetry collection;
+Event processing;
+Detection;
+Alert generation;
+Data storage;
+Investigation support.
+
+The analyst's responsibility is then to interpret the available information and determine whether an event represents legitimate activity, suspicious behavior, or a potential security incident.
+
+27. Troubleshooting Performed
+
+An important part of the project was not simply installing Wazuh, but troubleshooting the environment when components did not work as expected.
+
+The main troubleshooting activities included:
+
+Windows Agent
+
+We investigated why the Windows agent was not initially appearing correctly in the Dashboard.
+
+Sysmon
+
+We corrected an issue involving the Sysmon executable and verified that Sysmon was properly installed and generating events.
+
+Auditd
+
+We verified the complete path from Auditd logs to the Wazuh Dashboard to ensure Linux audit events were being collected.
+
+Network Connectivity
+
+Connectivity between the endpoints and the Wazuh Server was verified to ensure that the agents could communicate correctly.
+
+These troubleshooting activities were valuable because they simulated problems that can occur in real-world SOC and security infrastructure environments.
+
+28. GitHub Documentation Structure
+
+The project was organized with the intention of making the repository understandable to other cybersecurity professionals and recruiters.
+
+A recommended structure was:
+
+wazuh-soc-lab/
+│
+├── README.md
+│
+├── LICENSE
+│
+├── .gitignore
+│
+├── architecture/
+│   └── architecture.png
+│
+├── documentation/
+│   ├── installation.md
+│   ├── agent-configuration.md
+│   ├── sysmon.md
+│   ├── auditd.md
+│   ├── fim.md
+│   ├── vulnerability-detection.md
+│   ├── mitre-attck.md
+│   ├── testing.md
+│   └── troubleshooting.md
+│
+├── screenshots/
+│   ├── dashboard/
+│   ├── windows/
+│   ├── kali/
+│   └── alerts/
+│
+└── configs/
+    ├── wazuh/
+    ├── sysmon/
+    └── auditd/
+
+The purpose of this structure is to separate the project's:
+
+Documentation;
+Architecture;
+Configuration files;
+Screenshots;
+Testing evidence;
+Troubleshooting procedures.
+29. Security Considerations
+
+Because the project was intended as a cybersecurity portfolio, screenshots and configuration files should be reviewed before being published.
+
+Sensitive information such as:
+
+Public IP addresses;
+Personal usernames;
+Hostnames containing personal information;
+MAC addresses;
+Internal infrastructure details;
+Authentication credentials;
+API keys;
+Passwords;
+
+should not be exposed unnecessarily.
+
+For a portfolio project, replacing sensitive information with placeholders such as:
+
+192.168.X.X
+HOSTNAME
+USER
+REDACTED
+
+is preferable when the information is not necessary to demonstrate the technical result.
+
+30. Final Results
+
+The final result was a functional Wazuh-based security monitoring laboratory containing:
+
+A centralized Wazuh Server;
+Wazuh Indexer;
+Wazuh Dashboard;
+Windows 10 endpoint;
+Kali Linux endpoint;
+Wazuh Agents;
+Sysmon telemetry;
+Auditd telemetry;
+File Integrity Monitoring;
+Vulnerability monitoring;
+MITRE ATT&CK integration;
+Controlled network-security testing;
+Event investigation through the Dashboard.
+
+The project demonstrated the complete process of collecting endpoint telemetry, forwarding it to a centralized SIEM, processing the events, generating alerts, storing the information, and investigating the resulting security data.
+
+31. Conclusion
+
+This project provided a practical implementation of a SOC/SIEM laboratory using Wazuh.
+
+The implementation started with the deployment of Ubuntu Server 24.04 and the installation of the Wazuh infrastructure. Windows 10 and Kali Linux were subsequently configured as monitored endpoints.
+
+The environment was then enhanced with Sysmon on Windows and Auditd on Kali Linux, providing additional security telemetry for investigation.
+
+Additional Wazuh capabilities, including File Integrity Monitoring, vulnerability detection, inventory, and MITRE ATT&CK mapping, were also explored.
+
+Finally, controlled security activities were performed using Kali Linux, including Nmap-based reconnaissance, allowing the monitoring pipeline to be validated from the generation of an event to its visualization and investigation in the Wazuh Dashboard.
+
+The final laboratory therefore demonstrates the fundamental workflow of a defensive security operation:
+
+Collect → Detect → Alert → Investigate → Analyze → Respond
+
+This project provided practical experience with technologies and concepts commonly associated with SOC Analyst, Blue Team, SIEM, Endpoint Detection, Security Monitoring, Incident Investigation, and Threat Detection roles.
